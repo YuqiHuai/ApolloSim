@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map and Vehicles</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Embedding Flask variables as global JavaScript variables -->
+    <script type="text/javascript">
+        const mapData = {{ map_data | tojson }};
+        const min_x = {{ min_x }};
+        const min_y = {{ min_y }};
+        const max_x = {{ max_x }};
+        const max_y = {{ max_y }};
+
+        let offsetX = 0;
+        let offsetY = 0;
+        let rotationAngle = 0;
+        let scale = Math.min(window.innerWidth / (max_x - min_x), window.innerHeight / (max_y - min_y)) * 0.9;
+
+    </script>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+</head>
+<body>
+<!--    &lt;!&ndash; Canvas Layers &ndash;&gt;-->
+<!--    <canvas id="mapCanvas"></canvas>-->
+<!--    <canvas id="trafficLightCanvas"></canvas>-->
+<!--    <canvas id="actorCanvas"></canvas>-->
+
+    <div class="main-container">
+        <div class="info-container">
+            <div class="info">
+                <span id="map-name">Map: - </span> |
+                <span id="frame">Frame: - </span> |
+                <span id="game-time">Game Time: - </span> |
+                <span id="real-time">Real Time: - </span>
+            </div>
+            <button id="resetViewButton">Reset View</button>
+        </div>
+        <div class="simulator-container">
+            <!-- Canvas Layers -->
+            <canvas id="mapCanvas"></canvas>
+            <canvas id="trafficLightCanvas"></canvas>
+            <canvas id="actorCanvas"></canvas>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript files -->
+    <script type="module" src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/actor.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/traffic_light.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/listener.js') }}"></script> <!-- Adds shared canvas listeners -->
+    <script type="module" src="{{ url_for('static', filename='js/entire.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/socket.js') }}"></script>          <!-- Handles socket connections -->
+</body>
+</html>

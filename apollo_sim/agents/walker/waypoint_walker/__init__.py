@@ -1,0 +1,1 @@
+from apollo_sim.agents.walker.waypoint_walker.agent import WaypointWalkerAgent, WaypointWalkerConfig
