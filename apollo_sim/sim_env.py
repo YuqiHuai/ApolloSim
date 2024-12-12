@@ -247,7 +247,7 @@ class SimEnv(object):
         delta_time = 1 / GlobalData.sim_frequency
 
         # Process actors and traffic lights
-        actor_list = list(self._actor_pool.values()) + list(self._traffic_light_pool.values()) + list(self._oracle_pool.values())
+        actor_list = list(self._actor_pool.values()) + list(self._traffic_light_pool.values()) + list(self._oracle_pool.values()) + list(self._fitness_pool.values())
 
         with ThreadPoolExecutor(max_threads) as executor:
             # Process actors

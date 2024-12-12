@@ -36,7 +36,7 @@ class DestinationFitness(Fitness):
 
         self._max_stuck_time = -np.inf
 
-    def tick(self):
+    def tick(self, delta_time: float):
 
         # travel distance
         self._travel_distance += self._last_position.distance(self._actor.location)

@@ -27,11 +27,11 @@ class Fitness(object):
     def result(self):
         return copy.deepcopy(self._result)
 
-    def _tick(self):
+    def _tick(self, delta_time: float):
         raise NotImplementedError("You should implement this method in subclass.")
 
-    def tick(self):
+    def tick(self, delta_time: float):
         with self._thread_lock:
-            self._tick()
+            self._tick(delta_time)
 
 FitnessClass = TypeVar("FitnessClass", bound=Fitness)
