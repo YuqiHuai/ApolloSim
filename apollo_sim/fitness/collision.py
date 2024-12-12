@@ -23,7 +23,7 @@ class CollisionFitness(Fitness):
         self._sim_env = sim_env
         self._min_distance = np.inf
 
-    def _tick(self):
+    def _tick(self, delta_time: float):
 
         actors = self._sim_env.actors
 
