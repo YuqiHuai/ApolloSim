@@ -1,8 +1,8 @@
-from apollo_sim.actor import register_agent
+from apollo_sim.registry import ACTOR_REGISTRY
 from apollo_sim.actor.vehicle.base import VehicleActor, Location, BoundingBox
 
 # https://github.com/ApolloAuto/apollo/blob/v7.0.0/modules/calibration/data/mkz_example/vehicle_param.pb.txt
-@register_agent("vehicle.lincoln.mkz")
+@ACTOR_REGISTRY.register("vehicle.lincoln.mkz")
 class LincolnMKZ(VehicleActor):
 
     # basic information - fixed

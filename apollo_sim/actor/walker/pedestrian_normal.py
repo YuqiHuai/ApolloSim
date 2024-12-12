@@ -1,7 +1,7 @@
-from apollo_sim.actor import register_agent
+from apollo_sim.registry import ACTOR_REGISTRY
 from apollo_sim.actor.walker.base import WalkerActor, BoundingBox, Location
 
-@register_agent("walker.pedestrian.normal")
+@ACTOR_REGISTRY.register("walker.pedestrian.normal")
 class PedestrianNormal(WalkerActor):
 
     category = "walker.pedestrian.normal"

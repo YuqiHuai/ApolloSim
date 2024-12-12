@@ -5,9 +5,11 @@ from shapely.geometry import Point
 from apollo_sim.sim_env import SimEnv
 from apollo_sim.actor import Waypoint
 from apollo_sim.actor.base import ActorClass
-from apollo_sim.oracle import Oracle, register_oracle
+from apollo_sim.oracle import Oracle
+from apollo_sim.registry import ORACLE_REGISTRY
 
-@register_oracle('oracle.destination')
+
+@ORACLE_REGISTRY.register('oracle.destination')
 class DestinationOracle(Oracle):
 
     oracle_name = 'oracle.destination'
@@ -33,7 +35,7 @@ class DestinationOracle(Oracle):
         self._threshold = threshold
         self._min_distance = np.inf
 
-    def tick(self):
+    def tick(self, delta_time: float):
         _map = self._sim_env.map
         actor_lane_id, _ = _map.lane.get_lane(self._actor.location)
         if actor_lane_id == self._destination_lane_id:

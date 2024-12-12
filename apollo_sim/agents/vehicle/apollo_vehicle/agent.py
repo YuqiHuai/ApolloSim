@@ -154,7 +154,7 @@ class ApolloAgent:
         local_recording_folder = os.path.join(self.output_folder, 'records_apollo')
         if not os.path.exists(local_recording_folder):
             os.makedirs(local_recording_folder)
-        self.move_recording(local_recording_folder, f"{self.scenario_idx}_{self.id}", self.scenario_idx, delete_flag=True)
+        self.move_recording(local_recording_folder, f"{self.container_record_folder}", f"{self.scenario_idx}_{self.id}", delete_flag=True)
 
         self.publisher.stop()
 

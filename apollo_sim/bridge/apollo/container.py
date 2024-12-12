@@ -115,7 +115,7 @@ class ApolloContainer:
 
         param bool restart: force container to restart
         """
-        cmd = f'docker kill {self.name}'
+        cmd = f'docker stop {self.name}'
         logger.info(cmd)
         _ = subprocess.run(cmd, shell=True)
         time.sleep(wait_time)

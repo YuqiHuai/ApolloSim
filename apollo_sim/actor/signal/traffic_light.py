@@ -1,7 +1,7 @@
 from typing import List
 from enum import Enum
 
-from apollo_sim.actor import register_agent
+from apollo_sim.registry import ACTOR_REGISTRY
 from apollo_sim.actor.base import Actor
 
 class TrafficLightState(Enum):
@@ -13,7 +13,7 @@ class TrafficLightState(Enum):
     red = 2
     unknown = 3
 
-@register_agent("signal.traffic_light")
+@ACTOR_REGISTRY.register("signal.traffic_light")
 class TrafficLight(Actor):
 
     id: int or str = 0
@@ -34,6 +34,7 @@ class TrafficLight(Actor):
         self.state = state
         self.stop_line = stop_line
         self.conflicts = conflicts
+        self.light_count = 0
         self.equals = equals
         self.state = state
         self.timer = 0.0

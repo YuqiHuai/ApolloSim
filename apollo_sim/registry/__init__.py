@@ -1,0 +1,1 @@
+from apollo_sim.registry.root import ACTOR_REGISTRY, FITNESS_REGISTRY, ORACLE_REGISTRY

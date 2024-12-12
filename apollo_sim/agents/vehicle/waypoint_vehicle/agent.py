@@ -22,7 +22,7 @@ normalise_angle = lambda angle: math.atan2(math.sin(angle), math.cos(angle))
 
 class WaypointVehicleAgent(object):
 
-    frequency = 100.0
+    frequency = 25.0
 
     prefix = 'waypoint_vehicle'
 
@@ -73,8 +73,8 @@ class WaypointVehicleAgent(object):
 
         pid_longitudinal_cfg = parameters.get('pid_longitudinal_cfg', {
             'K_P': 1.0,
-            'K_D': 0,
-            'K_I': 0.05,
+            'K_D': 0.01,
+            'K_I': 0.0,
         })
 
         # 2. auto config
@@ -157,11 +157,21 @@ class WaypointVehicleAgent(object):
         self.step += 1
         curr_location = Point([self.actor.location.x, self.actor.location.y])
 
+        # 5. purge the queue of obsolete waypoints
+        min_wp_distance = max(self.actor.speed * 2.0 * self.MIN_DISTANCE_PERCENTAGE, self._min_distance)
+        max_index = -1
+        for i, waypoint in enumerate(self._waypoint_buffer):
+            waypoint_location = Point([waypoint.location.x, waypoint.location.y])
+            if waypoint_location.distance(curr_location) < min_wp_distance:
+                max_index = i
+        if max_index >= 0:
+            for i in range(max_index + 1):
+                self._waypoint_buffer.popleft()
+
         if self.debug:
             self.logger.info(f'=============Start {self.step}=============')
             self.logger.info(f"waypoint_queue length: {len(self._waypoints_queue)}")
             self.logger.info(f"waypoint_buffer length: {len(self._waypoint_buffer)}")
-
 
         # 1. if the queue is empty, stop the car
         if len(self._waypoints_queue) == 0 and len(self._waypoint_buffer) == 0:
@@ -233,16 +243,6 @@ class WaypointVehicleAgent(object):
             plt.savefig(f"{self.debug_folder}/{self.prefix}_{self.actor.id}_traj.png")
             plt.close()
 
-        # 5. purge the queue of obsolete waypoints
-        min_wp_distance = max(self.actor.speed * 2.0 * self.MIN_DISTANCE_PERCENTAGE, self._min_distance)
-        max_index = -1
-        for i, waypoint in enumerate(self._waypoint_buffer):
-            waypoint_location = Point([waypoint.location.x, waypoint.location.y])
-            if waypoint_location.distance(curr_location) < min_wp_distance:
-                max_index = i
-        if max_index >= 0:
-            for i in range(max_index + 1):
-                self._waypoint_buffer.popleft()
 
         self.actor.apply_control(vehicle_control)
         self.last_control = copy.deepcopy(vehicle_control)
@@ -277,6 +277,7 @@ class WaypointVehicleAgent(object):
             tmp_state_polygon, _, _ = tmp_state.get_polygon()
             curr_bbs.append(tmp_state_polygon)
 
+        # Step 2: check if the future polygons intersect with the obstacle polygons
         for actor_id, actor in actor_dict.items():
             if actor_id == self.actor.id:
                 continue
@@ -290,6 +291,7 @@ class WaypointVehicleAgent(object):
             obstacle_polygon, _, _ = actor.get_polygon()
             if buffer_polygon.intersects(obstacle_polygon):
                 return True
+
             for curr_polygon in curr_bbs:
                 if curr_polygon.intersects(obstacle_polygon):
                     return True

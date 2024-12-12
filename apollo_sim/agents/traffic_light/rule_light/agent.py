@@ -68,6 +68,7 @@ class RuleLightAgent:
                     continue
                 traffic_light_actor = self.traffic_light_actors[traffic_light_id]
                 traffic_light_actor.update_state(TrafficLightState.green)
+                traffic_light_actor.light_count = 1
                 complete_lights.append(traffic_light_id)
                 if self.debug:
                     self.logger.info(f"Set traffic light {traffic_light_id} to GREEN")
@@ -81,6 +82,16 @@ class RuleLightAgent:
                     complete_lights.append(conflict_id)
                     if self.debug:
                         self.logger.info(f"Set traffic light {conflict_id} (conflict with {traffic_light_id}) to RED")
+
+                for eq_id in traffic_light_actor.equals:
+                    if eq_id in complete_lights:
+                        continue
+                    eq_light = self.traffic_light_actors[eq_id]
+                    eq_light.update_state(TrafficLightState.green)
+                    eq_light.light_count = 1
+                    complete_lights.append(eq_id)
+                    if self.debug:
+                        self.logger.info(f"Set traffic light {eq_id} (equals with {traffic_light_id}) to GREEN")
 
     ######## tick ########
     def tick(self) -> List[dict]:
@@ -119,12 +130,47 @@ class RuleLightAgent:
                     self.logger.info(f"Traffic light {traffic_light_id} transitioned from YELLOW to RED")
 
             elif current_state == TrafficLightState.red and elapsed_time >= self.red_time:
-                if not any(self.traffic_light_actors[conflict_id].get_state() == TrafficLightState.green
-                           for conflict_id in traffic_light_actor.conflicts):
+                can_change = True
+                for conflict_id in traffic_light_actor.conflicts:
+                    conflict_light = self.traffic_light_actors[conflict_id]
+                    if conflict_light.get_state() == TrafficLightState.green or conflict_light.get_state() == TrafficLightState.yellow:
+                        can_change = False
+                        break
+
+                if can_change and traffic_light_actor.light_count == 0:
+
                     traffic_light_actor.update_state(TrafficLightState.green)
                     traffic_light_actor.set_last_state_time(current_game_time)
                     if self.debug:
                         self.logger.info(f"Traffic light {traffic_light_id} transitioned from RED to GREEN")
+
+                    traffic_light_actor.light_count = 1
+
+                    for eq_id in traffic_light_actor.equals:
+                        eq_light = self.traffic_light_actors[eq_id]
+                        eq_light.update_state(TrafficLightState.green)
+                        eq_light.set_last_state_time(current_game_time)
+                        eq_light.light_count = 1
+                        if self.debug:
+                            self.logger.info(f"Traffic light {eq_id} transitioned from RED to GREEN (equals)")
+
+                    # check the loop
+                    loop_finish = True
+                    for conflict_id in traffic_light_actor.conflicts:
+                        conflict_light = self.traffic_light_actors[conflict_id]
+                        if conflict_light.light_count == 0:
+                            loop_finish = False
+                            break
+
+                    if loop_finish:
+                        traffic_light_actor.light_count = 0
+                        for conflict_id in traffic_light_actor.conflicts:
+                            conflict_light = self.traffic_light_actors[conflict_id]
+                            conflict_light.light_count = 0
+
+                        for eq_id in traffic_light_actor.equals:
+                            eq_light = self.traffic_light_actors[eq_id]
+                            eq_light.light_count = 0
                 else:
                     if self.debug:
                         self.logger.info(f"Traffic light {traffic_light_id} remains RED due to conflicts")

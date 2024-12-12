@@ -8,8 +8,8 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO
 
 class SimRender:
-    def __init__(self, data_pipe, map_file, host='0.0.0.0', port=18888, debug=False):
-        self.data_pipe = data_pipe
+    def __init__(self, data_queue, map_file, host='0.0.0.0', port=18888, debug=False):
+        self.data_queue = data_queue
         self.map_file = map_file
         self.map_name = os.path.basename(os.path.dirname(self.map_file))
         self.host = host
@@ -69,12 +69,13 @@ class SimRender:
         """Background task to read data from the pipe and emit to the client."""
         while self.running:
             try:
-                if self.data_pipe.poll():
-                    data = self.data_pipe.recv()
+                if not self.data_queue.empty():
+                    data = self.data_queue.get()  # Retrieve data from the queue
                     self.socketio.emit('update', data)
             except Exception as e:
                 print("Error in background_task:", e)  # Log any potential errors
-            self.socketio.sleep(0.01)
+            finally:
+                self.socketio.sleep(0.01)  # Sleep briefly to prevent high CPU usage
 
     def _setup_socketio_events(self):
         @self.socketio.event

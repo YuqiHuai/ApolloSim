@@ -43,11 +43,19 @@ class PIDController:
         if curr_speed < 0.01:
             heading_error = 0.0
 
+        if abs(heading_error) <= 0.01:
+            # should satisfy the condition of the waypoint
+            target_speed = target_waypoint.speed
+        else:
+            mean_speed = curr_point.distance(next_point) / dt
+            constraint_speed = mean_speed #2 * mean_speed - curr_speed
+            target_speed = max(min(target_waypoint.speed, constraint_speed), 0.0)
+
         steer = self.lateral_control.run_step(heading_error, dt)
         steer = np.clip(steer, -1.0, 1.0) # we need this for adding more dynamic models
 
         # speed
-        target_speed = target_waypoint.speed
+        # target_speed = target_waypoint.speed
         delta = target_speed - curr_speed
         throttle_brake = self.longitudinal_control.run_step(delta, dt)
         throttle_brake = np.clip(throttle_brake, -1.0, 1.0)

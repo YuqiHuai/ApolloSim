@@ -2,9 +2,10 @@ import numpy as np
 
 from apollo_sim.sim_env import SimEnv
 from apollo_sim.actor import ActorClass
-from apollo_sim.fitness import Fitness, register_fitness
+from apollo_sim.fitness import Fitness
+from apollo_sim.registry import FITNESS_REGISTRY
 
-@register_fitness('fitness.destination')
+@FITNESS_REGISTRY.register('fitness.destination')
 class DestinationFitness(Fitness):
     """
     Two parts:

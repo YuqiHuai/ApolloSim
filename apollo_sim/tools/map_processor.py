@@ -1,9 +1,16 @@
-from apollo_sim.map.apollo_map import ApolloMapLoader
-from apollo_sim import map_root, apollo_root
+import os.path
+import time
+
+from loguru import logger
+from apollo_sim.map.map_loader import Map
 
 def preprocess_apollo_map(map_name: str, apollo_dir: str, map_dir: str):
-    # set root: TODO: update this
-    apollo_root = apollo_dir
-    map_root = map_dir
-    map_loader = ApolloMapLoader()
-    map_loader.convert_map(map_name)
+    """
+    Preprocess Apollo map
+    """
+    logger.info(f'Preprocessing Apollo map: {map_name}')
+    start_time = time.time()
+    map_instance = Map()
+    map_instance.parse_from_source(os.path.join(apollo_dir, map_name, 'base_map.bin'))
+    map_instance.export(os.path.join(map_dir, map_name))
+    logger.info(f'Preprocessing Apollo map: {map_name} finished in {time.time() - start_time:.2f}s')

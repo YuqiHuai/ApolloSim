@@ -1,7 +1,8 @@
-from apollo_sim.actor import register_agent, Location, BoundingBox
+from apollo_sim.actor import Location, BoundingBox
 from apollo_sim.actor.static.base import StaticActor
+from apollo_sim.registry import ACTOR_REGISTRY
 
-@register_agent("static.traffic_cone")
+@ACTOR_REGISTRY.register("static.traffic_cone")
 class TrafficCone(StaticActor):
 
     # basic information - fixed

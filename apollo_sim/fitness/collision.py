@@ -1,10 +1,11 @@
 import numpy as np
 
 from apollo_sim.actor.base import ActorClass
-from apollo_sim.fitness import Fitness, register_fitness
+from apollo_sim.fitness import Fitness
 from apollo_sim.sim_env import SimEnv
+from apollo_sim.registry import FITNESS_REGISTRY
 
-@register_fitness('fitness.collision')
+@FITNESS_REGISTRY.register('fitness.collision')
 class CollisionFitness(Fitness):
     # min -> collision
     fitness_name = 'fitness.collision'
