@@ -1,10 +1,12 @@
 import time
-
+from loguru import logger
 from apollo_sim.sim_env import SimEnv
 from apollo_sim.actor import ActorClass
-from apollo_sim.oracle import Oracle, register_oracle
+from apollo_sim.oracle import Oracle
+from apollo_sim.registry import ORACLE_REGISTRY
 
-@register_oracle('oracle.stuck')
+
+@ORACLE_REGISTRY.register('oracle.stuck')
 class StuckOracle(Oracle):
 
     oracle_name = 'oracle.stuck'
@@ -31,7 +33,7 @@ class StuckOracle(Oracle):
         self._last_game_time = self._sim_env.game_time # seconds
         self._stuck_time = 0
 
-    def tick(self):
+    def tick(self, delta_time: float):
         actor_speed = self._actor.speed
         if actor_speed <= self._speed_threshold:
             self._stuck_time += (self._sim_env.game_time - self._last_game_time)

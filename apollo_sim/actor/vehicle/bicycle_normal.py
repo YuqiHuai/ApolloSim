@@ -1,7 +1,7 @@
-from apollo_sim.actor import register_agent
+from apollo_sim.registry import ACTOR_REGISTRY
 from apollo_sim.actor.vehicle.base import VehicleActor, Location, BoundingBox
 
-@register_agent("vehicle.bicycle.normal")
+@ACTOR_REGISTRY.register("vehicle.bicycle.normal")
 class BicycleNormal(VehicleActor):
 
     # basic information - fixed

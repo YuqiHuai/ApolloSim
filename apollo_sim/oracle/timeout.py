@@ -1,10 +1,12 @@
 import time
 
-from apollo_sim.oracle import Oracle, register_oracle
+from apollo_sim.oracle import Oracle
 from apollo_sim.sim_env import SimEnv
+from apollo_sim.registry import ORACLE_REGISTRY
 
 
-@register_oracle('oracle.timeout')
+
+@ORACLE_REGISTRY.register('oracle.timeout')
 class TimeoutOracle(Oracle):
 
     oracle_name = 'oracle.timeout'
@@ -25,7 +27,7 @@ class TimeoutOracle(Oracle):
         self._time_limit = time_limit
         self._start_game_time = None
 
-    def tick(self):
+    def tick(self, delta_time: float):
         if self._start_game_time is None:
             self._start_game_time = self._sim_env.game_time
 

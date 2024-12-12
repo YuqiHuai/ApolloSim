@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import signal
 import multiprocessing
 
 from concurrent.futures import ThreadPoolExecutor
@@ -58,9 +59,8 @@ class SimEnv(object):
         self._recorder = None  # Record simulation data
         self._render = None
 
-        # Render config & pipe
-        self._render_parent_pipe = None
-        self._render_child_pipe = None
+        # Render config & queue
+        self._render_queue = None
 
         self._actor_pool = dict()
         self._traffic_light_pool = dict() # model traffic light
@@ -68,6 +68,8 @@ class SimEnv(object):
         self._fitness_pool = dict() # fitness
 
         GlobalData.timer = Timer(fps=GlobalData.sim_frequency)
+
+        signal.signal(signal.SIGINT, self.close)
 
         self._initialize()
 
@@ -92,9 +94,9 @@ class SimEnv(object):
 
         if reload_render:
             if self._use_render:
-                self._render_parent_pipe, self._render_child_pipe = multiprocessing.Pipe()
+                self._render_queue = multiprocessing.Queue(maxsize=5)
                 self._render = SimRender(
-                    data_pipe=self._render_parent_pipe,
+                    data_queue=self._render_queue,
                     map_file=os.path.join(GlobalData.map_root, GlobalData.map_name, 'map.json'),
                     host='0.0.0.0',
                     port=self._port,
@@ -104,8 +106,7 @@ class SimEnv(object):
                 self._render.run()
                 logger.info('Start visualization render on port: localhost:{}'.format(self._port))
             else:
-                self._render_parent_pipe = None
-                self._render_child_pipe = None
+                self._render_queue = None
                 self._render = None
 
     def reload_world(
@@ -233,7 +234,7 @@ class SimEnv(object):
             self._recorder.update(frame_data)
 
         if self._render is not None:
-            self._render_child_pipe.send(frame_data)
+            self._render_queue.put(frame_data)
 
     ######### Running simulation #########
     def tick(self):
@@ -246,17 +247,17 @@ class SimEnv(object):
         delta_time = 1 / GlobalData.sim_frequency
 
         # Process actors and traffic lights
-        actor_list = list(self._actor_pool.values()) + list(self._traffic_light_pool.values())
-        oracle_list = list(self._oracle_pool.values())
+        actor_list = list(self._actor_pool.values()) + list(self._traffic_light_pool.values()) + list(self._oracle_pool.values())
 
         with ThreadPoolExecutor(max_threads) as executor:
             # Process actors
             executor.map(lambda actor: actor.tick(delta_time), actor_list)
-            # Process oracles
-            executor.map(lambda oracle: oracle.tick(delta_time), oracle_list)
 
         # Update termination
-        self._termination = all([oracle.termination for oracle in self._oracle_pool.values()])
+        for oracle_instance in self._oracle_pool.values():
+            if oracle_instance.termination:
+                self._termination = True
+                break
 
         # Update timer
         GlobalData.timer.tick()
@@ -283,7 +284,7 @@ class SimEnv(object):
             self._thread_run.join()
             self._thread_run = None
 
-    def close(self):
+    def close(self, signum = None, frame = None):
         self.stop()
         if self._render is not None:
             self._render.close()
@@ -291,7 +292,7 @@ class SimEnv(object):
     ######### Saver Manager #########
     def export_record(self, filename: str):
         if self._recorder is not None:
-            self._recorder.save(filename)
+            self._recorder.export(filename)
         else:
             logger.warning("No record data to save. Please turn on the record flag.")
 

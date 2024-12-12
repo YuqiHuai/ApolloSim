@@ -1,10 +1,12 @@
 import numpy as np
 
 from apollo_sim.actor.base import ActorClass
-from apollo_sim.oracle import Oracle, register_oracle
+from apollo_sim.oracle import Oracle
 from apollo_sim.sim_env import SimEnv
+from apollo_sim.registry import ORACLE_REGISTRY
 
-@register_oracle('oracle.collision')
+
+@ORACLE_REGISTRY.register('oracle.collision')
 class CollisionOracle(Oracle):
 
     oracle_name = 'oracle.collision'
@@ -26,7 +28,7 @@ class CollisionOracle(Oracle):
         self._threshold = threshold
         self._min_distance = np.inf
 
-    def _tick(self):
+    def _tick(self, delta_time: float):
 
         actors = self._sim_env.actors
 

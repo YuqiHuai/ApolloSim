@@ -2,14 +2,13 @@ import copy
 import json
 import os.path
 
-import rtree
 import pickle
 import networkx as nx
 
 from loguru import logger
 from typing import List, Dict
 from collections import defaultdict
-from shapely.geometry import Polygon, LineString
+from shapely.geometry import LineString
 
 from apollo_sim.map.junction import JunctionManager
 from apollo_sim.map.crosswalk import CrosswalkManager
@@ -83,19 +82,8 @@ class Map(object):
 
         # 3. load lanes
         lanes = dict()
-        lane_index = rtree.index.Index()
         for l_index, l in enumerate(__map.lane):
             lanes[l.id.id] = l
-            lane = l
-            points = lane.left_boundary.curve.segment[0].line_segment
-            left_line = [[x.x, x.y] for x in points.point]
-            points = lane.right_boundary.curve.segment[0].line_segment
-            right_line = [[x.x, x.y] for x in points.point]
-            right_line = right_line[::-1]
-            lane_boundary = left_line + right_line
-            lane_polygon = Polygon(lane_boundary)
-            minx, miny, maxx, maxy = lane_polygon.bounds
-            lane_index.insert(l_index, (float(minx), float(miny), float(maxx), float(maxy)))
 
         # 4. stop signs
         stop_signs = dict()
@@ -138,7 +126,7 @@ class Map(object):
             for sigk, sigv in traffic_lights.items():
                 if __is_overlap(lanv, sigv):
                     lanes_traffic_light[lank].append(sigk)
-        self.lane.setup(lanes, lane_index, lanes_stop_sign, lanes_traffic_light)
+        self.lane.setup(lanes, lanes_stop_sign, lanes_traffic_light)
         logger.info("-> Load lanes")
 
         # 8. traffic light
