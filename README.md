@@ -29,6 +29,7 @@ python -c "import apollo_sim"
 ## Usage
 - [ ] Finish documentation for detailed usage.
 - [ ] Add examples for extending the simulator.
+- [ ] Current support for Apollo 7.0, will be extended to new versions.
 
 ## Citation
 If you find ApolloSim useful in your research, please consider citing the following paper:
