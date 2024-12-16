@@ -18,8 +18,8 @@ class DestinationOracle(Oracle):
             self,
             idx: str,
             actor: ActorClass,
-            destination: Waypoint,
             sim_env: SimEnv,
+            destination: Waypoint,
             threshold: float = 3.0,
             terminate_on_failure: bool = True # Note: in this situation, it means termination on reaching destination
     ):
@@ -35,10 +35,11 @@ class DestinationOracle(Oracle):
         self._threshold = threshold
         self._min_distance = np.inf
 
-    def tick(self, delta_time: float):
+    def _tick(self, delta_time: float):
         _map = self._sim_env.map
-        actor_lane_id, _ = _map.lane.get_lane(self._actor.location)
+        actor_lane_id = _map.lane.find_lane_id(x=self._actor.location.x, y=self._actor.location.y)
         if actor_lane_id == self._destination_lane_id:
             dist2dest = self._actor.dist2point(self._destination_point)
             if dist2dest < self._threshold and self._actor.speed < 0.5:
-                self._termination = True # reach the destination
+                if self._terminate_on_failure:
+                    self._termination = True

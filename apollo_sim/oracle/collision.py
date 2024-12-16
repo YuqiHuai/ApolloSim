@@ -41,5 +41,6 @@ class CollisionOracle(Oracle):
                 self._min_distance = dist2agent
 
             if self._min_distance <= self._threshold:
-                self._termination = True
-                break
+                if self._terminate_on_failure:
+                    self._termination = True
+                    break

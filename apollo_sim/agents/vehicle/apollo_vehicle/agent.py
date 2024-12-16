@@ -16,7 +16,7 @@ class ApolloAgent:
 
     prefix = 'apollo'
 
-    frequency_localization = 100.0
+    frequency_localization = 50.0
     frequency_perception = 25.0
     frequency_state = 25.0
 
@@ -151,7 +151,7 @@ class ApolloAgent:
 
         # stop & move recording
         self.recorder_operator('stop')
-        local_recording_folder = os.path.join(self.output_folder, 'records_apollo')
+        local_recording_folder = os.path.join(self.output_folder, f'records_apollo/{self.id}')
         if not os.path.exists(local_recording_folder):
             os.makedirs(local_recording_folder)
         self.move_recording(local_recording_folder, f"{self.container_record_folder}", f"{self.scenario_idx}_{self.id}", delete_flag=True)

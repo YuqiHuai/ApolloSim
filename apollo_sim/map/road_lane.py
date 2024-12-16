@@ -5,7 +5,7 @@ import networkx as nx
 
 from loguru import logger
 from typing import List, Optional, Dict, Tuple
-from shapely.geometry import Polygon, LineString
+from shapely.geometry import Polygon, LineString, Point
 
 from apollo_modules.modules.map.proto.map_lane_pb2 import Lane
 
@@ -27,10 +27,12 @@ class RoadLaneManager(object):
             lanes: Optional[Dict[str, Lane]] = None,
             lanes_stop_sign: Optional[Dict[str, str]] = None,
             lanes_traffic_light: Optional[Dict[str, str]] = None,
+            lanes_junction_flags: Optional[Dict[str, bool]] = None
     ):
         self.lanes = lanes
         self.lanes_stop_sign = lanes_stop_sign
         self.lanes_traffic_light = lanes_traffic_light
+        self.lanes_junction_flags = lanes_junction_flags
 
         self.lanes_index = None
         self.lanes_index_map = None
@@ -78,18 +80,21 @@ class RoadLaneManager(object):
             self,
             lanes: Dict[str, Lane],
             lanes_stop_sign: Dict[str, str],
-            lanes_traffic_light: Dict[str, str]
+            lanes_traffic_light: Dict[str, str],
+            lanes_junction_flags: Dict[str, bool]
     ):
         self.lanes = lanes
         self.lanes_stop_sign = lanes_stop_sign
         self.lanes_traffic_light = lanes_traffic_light
+        self.lanes_junction_flags = lanes_junction_flags
         self._initialize()
 
     def export(self):
         save_data = {
             'lanes': copy.deepcopy(self.lanes),
             'lanes_stop_sign': copy.deepcopy(self.lanes_stop_sign),
-            'lanes_traffic_light': copy.deepcopy(self.lanes_traffic_light)
+            'lanes_traffic_light': copy.deepcopy(self.lanes_traffic_light),
+            'lanes_junction_flags': copy.deepcopy(self.lanes_junction_flags)
         }
         for k, y in save_data['lanes'].items():
             save_data['lanes'][k] = y.SerializeToString()
@@ -103,11 +108,22 @@ class RoadLaneManager(object):
             self.lanes[k] = lane
         self.lanes_stop_sign = data['lanes_stop_sign']
         self.lanes_traffic_light = data['lanes_traffic_light']
+        self.lanes_junction_flags = data['lanes_junction_flags']
 
         self._initialize()
 
-    def get_all(self) -> List[str]:
-        return list(self.lanes.keys())
+    def is_junction_lane(self, lane_id: str) -> bool:
+        return self.lanes_junction_flags[lane_id]
+
+    def get_all(self, contain_junction: bool = True) -> List[str]:
+        if contain_junction:
+            return list(self.lanes.keys())
+        else:
+            pending_lanes = []
+            for lane_id in self.lanes.keys():
+                if not self.is_junction_lane(lane_id):
+                    pending_lanes.append(lane_id)
+            return pending_lanes
 
     def get(self, lane_id: str) -> Lane:
         """
@@ -422,3 +438,40 @@ class RoadLaneManager(object):
         except nx.NetworkXNoPath:
             logger.warning(f"No path found between {start_lane} and {end_lane}")
             return []
+
+    from shapely.geometry import Point
+
+    def find_lane_id(self, x, y):
+        """
+        Find the lane ID that contains the given position (x, y).
+
+        Parameters:
+        - x (float): X-coordinate of the position.
+        - y (float): Y-coordinate of the position.
+
+        Returns:
+        - str: The lane ID if found, otherwise None.
+        """
+        # Create a point from the given position
+        position = Point(x, y)
+
+        # Query the R-tree for possible matches (bounding box intersection)
+        possible_matches = list(self.lane_index.intersection((x, y, x, y)))
+
+        # Iterate through possible matches to find the exact lane
+        for lane_index_int in possible_matches:
+            lane_id = self.lanes_index_map[lane_index_int]
+            lane = self.lanes[lane_id]
+
+            # Reconstruct the lane polygon
+            left_points = [[p.x, p.y] for p in lane.left_boundary.curve.segment[0].line_segment.point]
+            right_points = [[p.x, p.y] for p in lane.right_boundary.curve.segment[0].line_segment.point]
+            lane_boundary = left_points + right_points[::-1]
+            lane_polygon = Polygon(lane_boundary)
+
+            # Check if the position is inside the polygon
+            if lane_polygon.contains(position):
+                return lane_id  # Found the lane ID
+
+        # If no lane contains the position, return None
+        return None

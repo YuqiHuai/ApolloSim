@@ -209,6 +209,8 @@ class ApolloContainer:
         """
         Starts cyber_recorder
         """
+        cmd = f"docker exec --user {self.user} {self.name} rm -rf cyber_recorder.log.INFO*"
+        _ = subprocess.run(cmd, shell=True)
         cmd = f"docker exec --user {self.user} {self.name} rm -rf {record_folder}/{record_id}"
         _ = subprocess.run(cmd, shell=True)
         cmd = f"docker exec --user {self.user} {self.name} mkdir -p {record_folder}/{record_id}"
