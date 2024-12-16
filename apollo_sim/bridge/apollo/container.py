@@ -23,7 +23,7 @@ class ApolloContainer:
     ) -> None:
 
         self.user = os.environ.get("USER")
-        self.name = f"apollo_dev_{self.user}" #name #f"apollo_dev_{self.user}"  # test for name
+        self.name = name #f"apollo_dev_{self.user}"  # test for name
         # create docker container if it is not exist
         self.hd_map = GlobalData.map_name
         self.apollo_root = GlobalData.apollo_root
@@ -209,6 +209,8 @@ class ApolloContainer:
         """
         Starts cyber_recorder
         """
+        cmd = f"docker exec --user {self.user} {self.name} rm -rf cyber_recorder.log.INFO*"
+        _ = subprocess.run(cmd, shell=True)
         cmd = f"docker exec --user {self.user} {self.name} rm -rf {record_folder}/{record_id}"
         _ = subprocess.run(cmd, shell=True)
         cmd = f"docker exec --user {self.user} {self.name} mkdir -p {record_folder}/{record_id}"

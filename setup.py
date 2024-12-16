@@ -23,6 +23,11 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/MingfeiCheng/ApolloSim",
     packages=find_packages(include=["apollo_sim", "apollo_sim.*"]),  # Include `apollo_sim` and sub-packages
+    package_data={
+        # Specify additional files to include
+        "apollo_sim": ["bridge/apollo/scripts/*.sh", "vis/**/*"],  # Adjust paths based on your project structure
+    },
+    include_package_data=True,  # Enables inclusion of files specified in MANIFEST.in
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

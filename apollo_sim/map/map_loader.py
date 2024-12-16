@@ -82,8 +82,10 @@ class Map(object):
 
         # 3. load lanes
         lanes = dict()
+        lanes_junction_flags = dict()
         for l_index, l in enumerate(__map.lane):
             lanes[l.id.id] = l
+            lanes_junction_flags[l.id.id] = False
 
         # 4. stop signs
         stop_signs = dict()
@@ -104,6 +106,11 @@ class Map(object):
             for junk, junv in junctions.items():
                 if __is_overlap(lanv, junv):
                     junction_lanes[junk].append(lank)
+                    if lank in lanes_junction_flags:
+                        lanes_junction_flags[lank] = True
+                    else:
+                        logger.warning(f"lane {lank} not found in lanes_junction_flags, please confirm")
+
         # 7.2 junc -> traffic lights
         junction_traffic_light = defaultdict(list)
         for sigk, sigv in traffic_lights.items():
@@ -126,7 +133,7 @@ class Map(object):
             for sigk, sigv in traffic_lights.items():
                 if __is_overlap(lanv, sigv):
                     lanes_traffic_light[lank].append(sigk)
-        self.lane.setup(lanes, lanes_stop_sign, lanes_traffic_light)
+        self.lane.setup(lanes, lanes_stop_sign, lanes_traffic_light, lanes_junction_flags)
         logger.info("-> Load lanes")
 
         # 8. traffic light

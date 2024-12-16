@@ -1,3 +1,4 @@
+from loguru import logger
 from typing import TypeVar
 from threading import Lock
 
@@ -33,6 +34,9 @@ class Oracle(object):
 
     def tick(self, delta_time: float):
         with self._thread_lock:
-            self._tick(delta_time)
+            try:
+                self._tick(delta_time)
+            except Exception as e:
+                logger.warning(f"Oracle {self.oracle_name} tick failed: {e}")
 
 OracleClass = TypeVar("OracleClass", bound=Oracle)

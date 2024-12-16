@@ -27,7 +27,7 @@ class TimeoutOracle(Oracle):
         self._time_limit = time_limit
         self._start_game_time = None
 
-    def tick(self, delta_time: float):
+    def _tick(self, delta_time: float):
         if self._start_game_time is None:
             self._start_game_time = self._sim_env.game_time
 

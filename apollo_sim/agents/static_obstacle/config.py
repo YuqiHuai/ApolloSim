@@ -9,6 +9,11 @@ from apollo_sim.actor import Location, Waypoint
 @dataclass
 class StaticObstacleConfig(object):
 
+    idx: int
+    category: str
+    waypoint: Waypoint
+    role: str = 'static'
+
     def __init__(
             self,
             idx: int,

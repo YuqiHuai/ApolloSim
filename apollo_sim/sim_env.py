@@ -74,6 +74,15 @@ class SimEnv(object):
         self._initialize()
 
     def _initialize(self, reload_render = True):
+        self._termination = False
+        self._render_first = False
+
+        # clear all actors
+        self._actor_pool = dict()
+        self._traffic_light_pool = dict()  # model traffic light
+        self._oracle_pool = dict()  # oracle
+        self._fitness_pool = dict()  # fitness
+
         GlobalData.map = Map()
         GlobalData.map.load_from_file(os.path.join(GlobalData.map_root, GlobalData.map_name))
 
@@ -240,7 +249,7 @@ class SimEnv(object):
     def tick(self):
         if not self._render_first:
             self._render_first = True
-            # self.rendering()
+            self.rendering()
 
         # Thread count (up to 24 threads)
         max_threads = min(24, multiprocessing.cpu_count())

@@ -6,6 +6,12 @@ from apollo_sim.actor import Waypoint, Location
 @dataclass
 class ApolloConfig(object):
 
+    idx: Any
+    category: str
+    route: List[Waypoint]
+    trigger_time: float
+    role: str = 'ads'
+
     def __init__(
             self,
             idx: Any,
