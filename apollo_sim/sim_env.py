@@ -284,6 +284,7 @@ class SimEnv(object):
         self._termination = False
         self._thread_run = Thread(target=self.async_run)
         GlobalData.timer.reset()
+        self._thread_run.setDaemon(True)
         self._thread_run.start()
 
     def stop(self):

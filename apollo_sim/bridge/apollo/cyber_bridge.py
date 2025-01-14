@@ -244,6 +244,7 @@ class CyberBridge:
             return
         self.spinning = True
         self.t = Thread(target=self._spin)
+        self.t.setDaemon(True)
         self.t.start()
 
     def stop(self):

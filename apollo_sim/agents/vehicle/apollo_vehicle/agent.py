@@ -130,8 +130,11 @@ class ApolloAgent:
         self.thread_perception = Thread(target=self._async_run_perception)
         self.thread_state = Thread(target=self._async_run_state)
 
+        self.thread_chassis_localization.setDaemon(True)
         self.thread_chassis_localization.start()
+        self.thread_perception.setDaemon(True)
         self.thread_perception.start()
+        self.thread_state.setDaemon(True)
         self.thread_state.start()
 
         # start recorder operator

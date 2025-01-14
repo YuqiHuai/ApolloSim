@@ -91,6 +91,7 @@ class SimRender:
             logger.info(f"Server stopped on {self.host}:{self.port}")
         # Start the server in a separate thread
         server_thread = threading.Thread(target=start_server, daemon=True)
+        server_thread.setDaemon(True)
         server_thread.start()
 
     def is_running(self):

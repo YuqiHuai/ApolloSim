@@ -187,6 +187,7 @@ class RuleLightAgent:
     def start(self):
         self.running = True
         self.thread_run = Thread(target=self._async_run)
+        self.thread_run.setDaemon(True)
         self.thread_run.start()
 
     def stop(self):
